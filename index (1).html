@@ -1,0 +1,335 @@
+<title>Генподряд: проект и финансы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --ink:#1B2335; --ink-2:#4A5367; --muted:#7A8296; --line:#E1E4EB; --grid:#EBEDF2;
+  --proj:#1D8C6E; --proj-d:#0F6650; --fin:#6A5FCF; --cross:#C8552E;
+  --hl:#F2B544; --hl-bg:rgba(242,181,68,.16); --win:rgba(242,181,68,.10); --good:#23875A; --bad:#C93B32;
+  --sans:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#12161F; --surface:#1A202C; --ink:#E9ECF2; --ink-2:#B7BECC; --muted:#8990A1; --line:#2B3240; --grid:#232A37;
+  --proj:#2FB38E; --proj-d:#56CFA8; --fin:#8E85EA; --cross:#E07350;
+  --hl:#F2B544; --hl-bg:rgba(242,181,68,.13); --win:rgba(242,181,68,.07); --good:#4CC38A; --bad:#F0685E;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161F; --surface:#1A202C; --ink:#E9ECF2; --ink-2:#B7BECC; --muted:#8990A1; --line:#2B3240; --grid:#232A37;
+  --proj:#2FB38E; --proj-d:#56CFA8; --fin:#8E85EA; --cross:#E07350;
+  --hl:#F2B544; --hl-bg:rgba(242,181,68,.13); --win:rgba(242,181,68,.07); --good:#4CC38A; --bad:#F0685E;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;padding-inline:20px;padding-block:28px 48px}
+.wrap{max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:clamp(24px,3.4vw,34px);font-weight:700;letter-spacing:-.01em;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-size:20px;font-weight:600;margin:0;text-wrap:balance}
+.lede{color:var(--ink-2);margin:6px 0 0;max-width:68ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+
+/* controls + caption */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.btn{font:500 14px var(--sans);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn:focus-visible,.pill:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.pill{font:500 12px var(--mono);width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer;position:relative;overflow:hidden}
+.pill[aria-current="true"]{background:var(--hl);border-color:var(--hl);color:#3A2A05}
+.pill.all{width:auto;border-radius:15px;padding:0 10px;font-family:var(--sans)}
+.progress{height:3px;background:var(--grid)}
+.progress i{display:block;height:100%;width:0;background:var(--hl)}
+
+/* gantt */
+.scroll{overflow-x:auto}
+.gantt{min-width:1000px;padding:10px 16px 16px;position:relative}
+.row{display:grid;grid-template-columns:190px 1fr 224px;align-items:center;min-height:26px;border-radius:6px;transition:background .35s,opacity .35s}
+.lbl{font-size:13px;padding:0 10px 0 8px;color:var(--ink);line-height:1.2}
+.row.key .lbl{font-weight:600}
+.track{position:relative;height:26px}
+.b{position:absolute;top:8px;height:10px;border-radius:3px}
+.sec{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 8px 4px}
+.axis{display:grid;grid-template-columns:190px 1fr 224px;align-items:end;font:400 11px var(--mono);color:var(--muted)}
+.axis .track{height:18px}
+.axis .track span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.grid{position:absolute;top:0;bottom:0;left:calc(16px + 190px);right:calc(16px + 224px);pointer-events:none}
+.grid i{position:absolute;top:28px;bottom:10px;width:1px;background:var(--grid)}
+.win{position:absolute;top:28px;bottom:10px;background:var(--win);border-left:1px dashed var(--hl);border-right:1px dashed var(--hl);transition:left .45s ease,width .45s ease,opacity .3s}
+.rows{position:relative}
+.gantt.focus .row:not(.on) .lbl,.gantt.focus .row:not(.on) .track{opacity:.28}
+.lbl,.track{transition:opacity .35s}
+.ed{display:flex;flex-direction:column;gap:3px;padding:3px 0 3px 12px;border-left:1px solid var(--line)}
+.pair{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.pair input{width:100%;font:500 12px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:2px 6px;height:22px;text-align:right}
+.pair input:hover{border-color:var(--muted)}
+.pair input:focus-visible{outline:2px solid var(--hl);outline-offset:0;border-color:var(--hl)}
+.pair input[aria-invalid="true"]{border-color:var(--bad)}
+.pair input.fact{border-style:dashed}
+.pair input[data-st="ok"]{border:1px solid var(--good);color:var(--good)}
+.pair input[data-st="over"]{border:1px solid var(--bad);color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--bg))}
+.fl{position:absolute;top:20px;height:3px;border-radius:2px}
+.tg{position:absolute;top:4px;height:18px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
+.edh{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding-left:12px;white-space:nowrap;font:500 10.5px var(--sans);color:var(--muted);text-align:right;line-height:1.2}
+.hint{font-size:12px;color:var(--muted);padding:0 16px 14px;margin:0}
+.row.on{background:var(--hl-bg);box-shadow:inset 3px 0 0 var(--hl);border-radius:0 6px 6px 0}
+
+/* caption */
+.cap{padding:18px;display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.cap .k{font:500 12px var(--mono);color:var(--muted)}
+.cap h3{margin:0;font-size:19px;font-weight:600;line-height:1.25}
+.cap p{margin:0;color:var(--ink-2);font-size:14px}
+.cap .when{font:500 12px var(--mono);color:var(--ink);background:var(--hl-bg);border:1px solid var(--hl);border-radius:6px;padding:3px 8px;align-self:flex-start}
+.links{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:12px}
+.lk{display:grid;grid-template-columns:10px 1fr;gap:8px;align-items:baseline;font-size:13px}
+.lk i{width:10px;height:10px;border-radius:2px;transform:translateY(1px)}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:.2;transform:translateY(3px)}to{opacity:1;transform:none}}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2);padding:0 16px 14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:10px;border-radius:2px;display:inline-block}
+
+@media (max-width:900px){.stage{grid-template-columns:1fr}.cap{position:static;order:-1}}
+@media (max-width:640px){.pills{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Генподрядный проект в ЕС: где проект встречается с финансами</h1>
+    <p class="lede">Типичный объект с ~24 месяцами СМР, взгляд со стороны генподрядчика. Этапы подсвечиваются по очереди вместе с финансовыми функциями, которые они запускают. Сроки можно менять в ячейках справа от диаграммы.</p>
+  </header>
+
+  <div class="stage">
+    <section class="panel" aria-label="Диаграмма Ганта">
+      <div class="bar">
+        <button class="btn primary" id="play" type="button" aria-label="Пауза">❚❚ Пауза</button>
+        <button class="btn" id="prev" type="button" aria-label="Предыдущий шаг">←</button>
+        <button class="btn" id="next" type="button" aria-label="Следующий шаг">→</button>
+        <button class="btn" id="reset" type="button">Сбросить сроки</button>
+        <div class="pills" id="pills" role="group" aria-label="Шаги"></div>
+      </div>
+      <div class="progress"><i id="prog"></i></div>
+      <div class="scroll">
+        <div class="gantt focus" id="gantt">
+          <div class="grid" id="grid"><div class="win" id="win"></div></div>
+          <div class="axis"><div></div><div class="track" id="axis"></div><div class="edh"><span>Начало</span><span>План</span><span>Факт</span><span>Цель</span></div></div>
+          <div class="rows" id="rows"></div>
+        </div>
+      </div>
+      <p class="hint">Справа: начало (номер месяца), плановая, фактическая и целевая длительность в месяцах. Факт сравнивается с целью (если цели нет, с планом): зеленый — укладываемся, красный — превышение. Значения сохраняются в этом браузере.</p>
+      <div class="legend">
+        <span><i style="background:var(--proj)"></i>Проект</span>
+        <span><i style="background:repeating-linear-gradient(90deg,var(--proj-d) 0 5px,transparent 5px 9px)"></i>Ежемесячная сдача</span>
+        <span><i style="background:var(--fin)"></i>Финансы по этапам</span>
+        <span><i style="background:var(--cross)"></i>Сквозные функции</span>
+        <span><i style="background:repeating-linear-gradient(45deg,var(--muted) 0 3px,transparent 3px 6px);border:1px solid var(--muted)"></i>Гарантийный период</span>
+        <span><i style="height:3px;background:var(--good)"></i>Факт в срок</span>
+        <span><i style="height:3px;background:var(--bad)"></i>Факт с превышением</span>
+        <span><i style="width:2px;height:12px;background:var(--ink)"></i>Целевой срок</span>
+      </div>
+    </section>
+
+    <aside class="panel cap" id="cap" aria-live="polite"></aside>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+const S=[
+ {sec:'Проект',color:'var(--proj)',rows:[
+  ['p9','Инициация: go/no go, bid/no bid',[[0,1]]],
+  ['p0','Тендер, оферта',[[1,3]]],
+  ['p1','Переговоры, договор',[[2,4]]],
+  ['p2','Мобилизация',[[4,6]]],
+  ['p3','Проектирование (D&B)',[[4,10]],'light'],
+  ['p4','СМР',[[5,29]]],
+  ['p5','Сдача выполнения заказчику',[[6,30]],'monthly'],
+  ['p6','Приемка объекта',[[29,31]]],
+  ['p7','Гарантийный период',[[31,43]],'hatch'],
+  ['p8','Финальный расчет',[[43,46]]]]},
+ {sec:'Финансы по этапам',color:'var(--fin)',rows:[
+  ['f0','Сметный расчет, цена',[[0,3]]],
+  ['f1','Тендерная гарантия',[[1,4]]],
+  ['f2','Аванс и гарантии',[[3,6]]],
+  ['f3','Бюджет себестоимости',[[4,7]]],
+  ['f4','Контроль затрат, субподряд',[[6,31]]],
+  ['f9','Распределение накладных',[[5,32]]],
+  ['f5','Счета по актам, дебиторка',[[7,32]]],
+  ['f6','Выручка по МСФО 15',[[6,31]],'light'],
+  ['f7','Изменения и претензии',[[8,46]],'light'],
+  ['f8','Возврат удержаний',[[31,32],[43,44]]]]},
+ {sec:'Сквозные функции',color:'var(--cross)',rows:[
+  ['c0','Казначейство, cash flow',[[0,48]]],
+  ['c1','Лимиты банковских гарантий',[[1,43]]],
+  ['c2','Налоги (НДС, КПН)',[[0,48]]],
+  ['c3','Риски (валюта, цены)',[[0,46]]],
+  ['c4','Управленческая отчетность',[[4,48]]]]}
+];
+const STEPS=[
+ {t:'Инициация: go/no go и bid/no bid',win:[0,1],rows:['p9','f0'],d:'Решение, идти ли в проект и подавать ли оферту. Финансы готовят укрупненный сметный расчет и ориентировочную цену с маржой, оценивают риски, загрузку мощностей, свободный лимит банковских гарантий и потребность в оборотном капитале.'},
+ {t:'Тендер',win:[1,3],rows:['p0','f0','f1'],d:'Детальный сметный расчет: себестоимость, ставка накладных, маржа и риски в цене оферты. Выпускается тендерная гарантия (bid bond).'},
+ {t:'Договор',win:[2,6],rows:['p1','f2'],d:'Аванс 10–20% под банковскую гарантию, гарантия исполнения около 10%. Согласуются условия оплаты и удержаний.'},
+ {t:'Мобилизация',win:[4,10],rows:['p2','p3','f3'],d:'Бюджет себестоимости (cost plan) и график потребности в деньгах до первых поступлений от заказчика.'},
+ {t:'СМР и накладные расходы',win:[5,32],rows:['p4','f4','f9'],d:'Контроль затрат план-факт, договоры и платежи субподрядчикам и поставщикам. Накладные площадки (прорабы, бытовки, охрана, техника) относятся на проект напрямую, накладные головного офиса распределяются ежемесячно по базе: прямые затраты, выручка или трудозатраты. По МСФО 15 общие и административные расходы входят в затраты по договору, только если заказчик их явно возмещает, иначе идут в расходы периода и не влияют на процент завершенности.'},
+ {t:'Сдача выполнения',win:[6,32],rows:['p5','f5','f6'],d:'Ежемесячная заявка заказчику, сертификация до 28 дней, оплата до 56 дней. Счета, дебиторка, выручка по степени завершенности.'},
+ {t:'Приемка объекта',win:[29,32],rows:['p6','f8','f7'],d:'Возврат 50% гарантийных удержаний, закрытие затрат, фиксация изменений и претензий.'},
+ {t:'Гарантия и финальный расчет',win:[31,46],rows:['p7','p8','f7','f8'],d:'Устранение дефектов (обычно 12 месяцев), финальный счет и возврат остатка удержаний.'},
+ {t:'Сквозные функции',win:[0,48],rows:['c0','c1','c2','c3','c4'],d:'Казначейство, лимиты банковских гарантий, налоги, риски и управленческая отчетность работают весь цикл.'}
+];
+
+const DEF={};S.forEach(sec=>sec.rows.forEach(r=>DEF[r[0]]=r[2].map(x=>x.slice())));
+const KEY='gc-gantt-spans-v1';
+let SP={};
+try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved)SP=saved;}catch(e){}
+Object.keys(DEF).forEach(id=>{const v=SP[id];if(!Array.isArray(v)||v.length!==DEF[id].length||v.some(x=>!Array.isArray(x)||x.length!==2||!isFinite(x[0])||!isFinite(x[1])))SP[id]=DEF[id].map(x=>x.slice());});
+const KEY2='gc-gantt-ft-v1';
+let FT={};
+try{const saved2=JSON.parse(localStorage.getItem(KEY2)||'null');if(saved2&&typeof saved2==='object')FT=saved2;}catch(e){}
+Object.keys(DEF).forEach(id=>{const v=FT[id];if(!Array.isArray(v)||v.length!==DEF[id].length)FT[id]=DEF[id].map(()=>({f:null,t:null}));else FT[id]=v.map(o=>({f:(o&&Number.isFinite(o.f))?o.f:null,t:(o&&Number.isFinite(o.t))?o.t:null}));});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(SP));localStorage.setItem(KEY2,JSON.stringify(FT))}catch(e){}}
+let M=48;
+const pct=m=>(m/M*100)+'%';
+const label={},meta={};
+const rowsEl=document.getElementById('rows');
+S.forEach(sec=>{
+  const h=document.createElement('div');h.className='sec';h.textContent=sec.sec;rowsEl.appendChild(h);
+  sec.rows.forEach(([id,name,spans,style])=>{
+    label[id]={name,color:sec.color};meta[id]={style,color:sec.color};
+    const r=document.createElement('div');r.className='row'+(style==='monthly'?' key':'');r.dataset.id=id;
+    const l=document.createElement('div');l.className='lbl';l.textContent=name;
+    const t=document.createElement('div');t.className='track';t.id='tr-'+id;
+    const ed=document.createElement('div');ed.className='ed';
+    spans.forEach((_,k)=>{
+      const pr=document.createElement('div');pr.className='pair';
+      [['s','Начало'],['d','План, длительность'],['f','Факт, длительность'],['t','Цель, длительность']].forEach(([f,nm])=>{
+        const inp=document.createElement('input');inp.type='number';inp.inputMode='numeric';inp.step='1';
+        inp.min=f==='s'?'0':(f==='d'?'1':'0');inp.max='120';inp.id=`in-${id}-${k}-${f}`;if(f==='f')inp.className='fact';if(f==='f'||f==='t')inp.placeholder='–';
+        inp.setAttribute('aria-label',`${name}${spans.length>1?' ('+(k+1)+')':''}: ${nm.toLowerCase()}, мес`);
+        inp.addEventListener('focus',()=>{if(playing)stop()});
+        inp.addEventListener('input',()=>onEdit(id,k,f,inp));
+        pr.appendChild(inp);
+      });
+      ed.appendChild(pr);
+    });
+    r.append(l,t,ed);rowsEl.appendChild(r);
+  });
+});
+function fillInputs(){
+  Object.keys(SP).forEach(id=>SP[id].forEach(([a,b],k)=>{
+    const si=document.getElementById(`in-${id}-${k}-s`),di=document.getElementById(`in-${id}-${k}-d`);
+    if(si){si.value=a;si.removeAttribute('aria-invalid')}
+    if(di){di.value=b-a;di.removeAttribute('aria-invalid')}
+    const o=FT[id][k],fi=document.getElementById(`in-${id}-${k}-f`),ti=document.getElementById(`in-${id}-${k}-t`);
+    if(fi){fi.value=o.f??'';fi.removeAttribute('aria-invalid')}
+    if(ti){ti.value=o.t??'';ti.removeAttribute('aria-invalid')}
+  }));
+  status();
+}
+function status(){
+  Object.keys(SP).forEach(id=>SP[id].forEach(([a,b],k)=>{
+    const o=FT[id][k],fi=document.getElementById(`in-${id}-${k}-f`);if(!fi)return;
+    if(o.f==null){fi.removeAttribute('data-st');fi.title='';return;}
+    const ref=o.t!=null?o.t:b-a;const d=o.f-ref;
+    fi.dataset.st=d>0?'over':'ok';
+    fi.title=(o.t!=null?'к цели: ':'к плану: ')+(d>0?'+':'')+d+' мес';
+  }));
+}
+function onEdit(id,k,f,inp){
+  if(f==='f'||f==='t'){
+    if(inp.value===''){FT[id][k][f]=null;inp.removeAttribute('aria-invalid');save();status();draw();if(cur>=0)show(cur,true);return;}
+    const w=Number(inp.value);const good=Number.isInteger(w)&&w>=0&&w<=120;
+    inp.setAttribute('aria-invalid',good?'false':'true');if(!good)return;
+    FT[id][k][f]=w;save();status();draw();if(cur>=0)show(cur,true);return;
+  }
+  const v=Number(inp.value);
+  const ok=inp.value!==''&&Number.isInteger(v)&&(f==='s'?v>=0:v>=1)&&v<=120;
+  inp.setAttribute('aria-invalid',ok?'false':'true');
+  if(!ok)return;
+  const [a,b]=SP[id][k];
+  if(f==='s')SP[id][k]=[v,v+(b-a)];else SP[id][k]=[a,a+v];
+  save();status();draw();if(cur>=0)show(cur,true);
+}
+const axis=document.getElementById('axis'),grid=document.getElementById('grid');
+function draw(){
+  let mx=0;Object.keys(SP).forEach(id=>SP[id].forEach(([a,b],k)=>{const o=FT[id][k];[b,o.f!=null?a+o.f:0,o.t!=null?a+o.t:0].forEach(e=>{if(e>mx)mx=e})}));
+  M=Math.max(24,Math.ceil(mx/6)*6);
+  const stepT=M>72?12:6;
+  axis.innerHTML='';grid.querySelectorAll('i').forEach(x=>x.remove());
+  for(let m=0;m<=M;m+=stepT){
+    const sEl=document.createElement('span');sEl.style.left=pct(m);sEl.textContent=m;
+    if(m===0)sEl.style.transform='none';if(m===M)sEl.style.transform='translateX(-100%)';
+    axis.appendChild(sEl);
+    const g=document.createElement('i');g.style.left=pct(m);grid.appendChild(g);
+  }
+  Object.keys(SP).forEach(id=>{
+    const t=document.getElementById('tr-'+id);t.innerHTML='';
+    const {style,color}=meta[id];
+    SP[id].forEach(([a,b],k)=>{
+      const o=FT[id][k];
+      if(o.f!=null&&o.f>0){const ref=o.t!=null?o.t:b-a;const fl=document.createElement('div');fl.className='fl';fl.style.cssText=`left:${pct(a)};width:${pct(o.f)};background:var(--${o.f>ref?'bad':'good'})`;t.appendChild(fl);}
+      if(o.t!=null){const tg=document.createElement('div');tg.className='tg';tg.style.left=pct(a+o.t);tg.title='Цель: '+o.t+' мес';t.appendChild(tg);}
+      if(style==='monthly'){for(let m=a;m<b;m++){const x=document.createElement('div');x.className='b';x.style.cssText=`left:${pct(m)};width:calc(${100/M}% - 3px);background:var(--proj-d)`;t.appendChild(x);}return;}
+      const x=document.createElement('div');x.className='b';
+      let bg=color,extra='';
+      if(style==='light')extra='opacity:.5;';
+      if(style==='hatch'){bg=`repeating-linear-gradient(45deg,${color} 0 4px,transparent 4px 7px)`;extra=`border:1px solid ${color};`;}
+      x.style.cssText=`left:${pct(a)};width:${pct(b-a)};background:${bg};${extra}`;
+      t.appendChild(x);
+    });
+  });
+}
+function stepWin(st){
+  const src=st.rows.filter(id=>id[0]==='p');const ids=src.length?src:st.rows;
+  let a=Infinity,b=-Infinity;ids.forEach(id=>SP[id].forEach(([x,y])=>{if(x<a)a=x;if(y>b)b=y}));
+  return [a,b];
+}
+
+const pills=document.getElementById('pills'),cap=document.getElementById('cap'),win=document.getElementById('win'),gantt=document.getElementById('gantt'),prog=document.getElementById('prog'),playBtn=document.getElementById('play');
+const allBtn=document.createElement('button');allBtn.type='button';allBtn.className='pill all';allBtn.textContent='Все';allBtn.addEventListener('click',()=>{stop();show(-1)});
+STEPS.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=i+1;b.title=s.t;b.setAttribute('aria-label','Шаг '+(i+1)+': '+s.t);b.addEventListener('click',()=>{stop();show(i)});pills.appendChild(b)});
+pills.appendChild(allBtn);
+
+let cur=0,timer=null,playing=false,t0=0;const DUR=4500;
+function show(i,quiet){
+  cur=i;
+  [...pills.children].forEach((b,k)=>b.setAttribute('aria-current',(k===i||(i<0&&b===allBtn))?'true':'false'));
+  document.querySelectorAll('.row').forEach(r=>r.classList.remove('on'));
+  if(i<0){
+    gantt.classList.remove('focus');win.style.opacity=0;
+    cap.innerHTML=`<span class="k">Обзор</span><h3>Весь цикл проекта</h3><p>Нажмите «Пуск» или выберите шаг, чтобы увидеть, какие финансовые функции включаются на каждом этапе.</p>`;
+    return;
+  }
+  const s=STEPS[i];gantt.classList.add('focus');
+  s.rows.forEach(id=>{const r=document.querySelector(`.row[data-id="${id}"]`);if(r)r.classList.add('on')});
+  const w=stepWin(s);
+  win.style.opacity=1;win.style.left=pct(w[0]);win.style.width=pct(w[1]-w[0]);
+  const links=s.rows.map(id=>`<div class="lk"><i style="background:${label[id].color}"></i><span>${label[id].name}</span></div>`).join('');
+  cap.innerHTML=`<div class="${quiet?'':'fade'}" style="display:flex;flex-direction:column;gap:12px"><span class="k">Шаг ${i+1} из ${STEPS.length}</span><h3>${s.t}</h3><span class="when">мес ${w[0]}–${w[1]}</span><p>${s.d}</p><div class="links">${links}</div></div>`;
+}
+function tick(now){
+  if(!playing)return;
+  const p=Math.min(1,(now-t0)/DUR);prog.style.width=(p*100)+'%';
+  if(p>=1){show((cur+1+STEPS.length)%STEPS.length);t0=now;}
+  timer=requestAnimationFrame(tick);
+}
+function play(){if(cur<0)show(0);playing=true;t0=performance.now();playBtn.textContent='❚❚ Пауза';playBtn.setAttribute('aria-label','Пауза');cancelAnimationFrame(timer);timer=requestAnimationFrame(tick)}
+function stop(){playing=false;cancelAnimationFrame(timer);prog.style.width='0';playBtn.textContent='▶ Пуск';playBtn.setAttribute('aria-label','Пуск')}
+playBtn.addEventListener('click',()=>playing?stop():play());
+document.getElementById('next').addEventListener('click',()=>{stop();show(cur<0?0:(cur+1)%STEPS.length)});
+document.getElementById('prev').addEventListener('click',()=>{stop();show(cur<=0?STEPS.length-1:cur-1)});
+document.getElementById('reset').addEventListener('click',()=>{Object.keys(DEF).forEach(id=>SP[id]=DEF[id].map(x=>x.slice()));save();fillInputs();draw();if(cur>=0)show(cur,true)});
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('prev').click();if(e.key===' '&&e.target===document.body){e.preventDefault();playBtn.click()}});
+
+fillInputs();draw();
+
+show(0);
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(reduce)stop();else play();
+})();
+</script>
